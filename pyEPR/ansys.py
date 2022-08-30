@@ -2460,7 +2460,7 @@ class HfssModeler(COMWrapper):
 
         return objs
 
-    def assign_impedance(self, obj: List[str], name: str = 'Imped', resistance: str = "0", reactance: str = "1n"):
+    def assign_impedance(self, obj: List[str], name: str = 'Imped', resistance: str = 50, reactance: str = 0):
         '''
         Assign a boundary condition to a list of objects.
 
@@ -2474,7 +2474,7 @@ class HfssModeler(COMWrapper):
                 name = str(obj) + '_' + name
         name = increment_name(name, self._boundaries.GetBoundaries())
         self._boundaries.AssignImpedance(
-            ["NAME:" + name, "Resistance:", resistance, "Reactance:", reactance, 
+            ["NAME:" + name, "Resistance:=", resistance, "Reactance:=", reactance, 
              "InfGroundPlane:=", False, "Objects:=", obj])
 
     def append_impedance_assignment(self, boundary_name: str, object_names: list):
