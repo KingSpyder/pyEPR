@@ -2422,6 +2422,22 @@ class HfssModeler(COMWrapper):
                 list(set(objects + object_names))
             ])
 
+    def assign_perfect_E(self, obj: List[str], name: str = 'PerfE'):
+        '''
+        Assign a boundary condition to a list of objects.
+
+        Arg:
+            objs (List[str]): Takes a name of an object or a list of object names.
+            name(str): If `name` is not specified `PerfE` is appended to object name for the name.
+        '''
+        if not isinstance(obj, list):
+            obj = [obj]
+            if name == 'PerfE':
+                name = str(obj) + '_' + name
+        name = increment_name(name, self._boundaries.GetBoundaries())
+        self._boundaries.AssignPerfectE(
+            ["NAME:" + name, "Objects:=", obj, "InfGroundPlane:=", False])
+
     def append_mesh(self, mesh_name: str, object_names: list, old_objs: list,
                     **kwargs):
         '''
@@ -2444,7 +2460,7 @@ class HfssModeler(COMWrapper):
 
         return objs
 
-    def assign_perfect_E(self, obj: List[str], name: str = 'PerfE'):
+    def assign_impedance(self, obj: List[str], name: str = 'Imped', resistance: str = "0", reactance: str = "1n"):
         '''
         Assign a boundary condition to a list of objects.
 
@@ -2457,8 +2473,32 @@ class HfssModeler(COMWrapper):
             if name == 'PerfE':
                 name = str(obj) + '_' + name
         name = increment_name(name, self._boundaries.GetBoundaries())
-        self._boundaries.AssignPerfectE(
-            ["NAME:" + name, "Objects:=", obj, "InfGroundPlane:=", False])
+        self._boundaries.AssignImpedance(
+            ["NAME:" + name, "Resistance:", resistance, "Reactance:", reactance, 
+             "InfGroundPlane:=", False, "Objects:=", obj])
+
+    def append_impedance_assignment(self, boundary_name: str, object_names: list):
+        '''
+            This will create a new boundary if need, and will
+            otherwise append given names to an existing boundary
+        '''
+        # enforce
+        boundary_name = str(boundary_name)
+        if isinstance(object_names, str):
+            object_names = [object_names]
+        object_names = list(object_names)  # enforce list
+
+        # do actual work
+        if boundary_name not in self._boundaries.GetBoundaries(
+        ):   
+            self.assign_impedance(object_names, name=boundary_name)
+        else:
+            # need to append
+            objects = list(self.get_boundary_assignment(boundary_name))
+            self._boundaries.ReassignBoundary([
+                "NAME:" + boundary_name, "Objects:=",
+                list(set(objects + object_names))
+            ])
 
     def _make_lumped_rlc(self, r, l, c, start, end, obj_arr, name="LumpRLC"):
         name = increment_name(name, self._boundaries.GetBoundaries())
