@@ -715,6 +715,9 @@ class HfssDesign(COMWrapper):
             return HfssEMSetup(self, name)
         elif self.solution_type == "DrivenModal":
             return HfssDMSetup(self, name)
+        # Added for compatibility in HFSS 2022 R2.3
+        elif self.solution_type == "HFSS Hybrid Modal Network":
+            return HfssDMSetup(self, name)
         elif self.solution_type == "DrivenTerminal":
             return HfssDTSetup(self, name)
         elif self.solution_type == "Q3D":
